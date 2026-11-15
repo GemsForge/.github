@@ -5,7 +5,8 @@
     "refactor",
     "test",
     "docs",
-    "chore"
+    "chore",
+    "ci"
   ],
   "format": "type(scope): #issue short imperative description",
   "example": "chore(ci): #123 enforce commit message policy"

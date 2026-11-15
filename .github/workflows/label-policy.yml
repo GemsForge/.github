@@ -40,7 +40,7 @@ jobs:
             })).data;
             let pr = await loadPr();
             const title = pr.title || "";
-            const match = /^(feat|fix|refactor|test|docs|chore)\(([a-z0-9-]+)\): #([1-9][0-9]*) ([a-z][a-z0-9-]*(?:\s+\S.*)?)$/.exec(title);
+            const match = /^(feat|fix|refactor|test|docs|chore|ci)\(([a-z0-9-]+)\): #([1-9][0-9]*) ([a-z][a-z0-9-]*(?:\s+\S.*)?)$/.exec(title);
             if (!match) {
               core.setFailed("PR title must match type(scope): #issue short imperative description.");
               return;
@@ -52,7 +52,7 @@ jobs:
             }
             const required = {
               feat: "feature", fix: "fix", refactor: "refactor",
-              test: "testing", docs: "documentation", chore: "chore",
+              test: "testing", docs: "documentation", chore: "chore", ci: "ci",
             }[match[1]];
             const hasLabel = (value) => (value.labels || []).some(({ name }) => name === required);
             const deadline = Date.now() + Number(process.env.LABEL_WAIT_SECONDS || 0) * 1000;
