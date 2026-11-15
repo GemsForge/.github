@@ -11,7 +11,7 @@ set -euo pipefail
 (( $# == 1 )) || { print -u2 "Usage: $0 <local-checkout-path>"; exit 2; }
 checkout=${1:A}
 here=${0:A:h:h}
-[[ -d $checkout/.git ]] || { print -u2 "$checkout is not a git checkout."; exit 2; }
+[[ -e $checkout/.git ]] || { print -u2 "$checkout is not a git checkout."; exit 2; }
 
 superseded=(branch-policy.yml label-policy.yml sync-pr-metadata.yml)
 dest=$checkout/.github/workflows

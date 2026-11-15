@@ -21,7 +21,7 @@ here=${0:A:h:h}
 owner=${repo%%/*}
 
 [[ $project == <1-> ]] || { print -u2 "Project number must be a positive integer."; exit 2; }
-[[ -d $checkout/.git ]] || { print -u2 "$checkout is not a git checkout."; exit 2; }
+[[ -e $checkout/.git ]] || { print -u2 "$checkout is not a git checkout."; exit 2; }
 
 # 1. Verify the clipboard token without echoing it.
 token=$(pbpaste | tr -d '[:space:]')
