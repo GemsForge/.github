@@ -6,8 +6,11 @@ name: Commit policy
 # checked out at the same commit as this workflow, so callers stay in sync.
 # A caller may keep its own grandfathering baseline in one of:
 #   Scripts/commit-policy.json, scripts/commit-policy.json, .github/commit-policy.json
-# Only its "legacyBase" is used. Merge commits are exempt; PR titles are checked
-# because they supply the proposed squash-merge subject.
+# Only its "legacyBase" is used, and it is read from the DEFAULT BRANCH, never
+# from the pushed or pull-request commits, so a change cannot grandfather
+# itself. A new or moved baseline takes effect once it is merged.
+# Merge commits are exempt; PR titles are checked because they supply the
+# proposed squash-merge subject.
 on:
   workflow_call:
 
@@ -42,8 +45,16 @@ jobs:
           package-manager-cache: false
       - name: Validate commits and proposed squash subject
         # Messages and titles come from Git and the event JSON, never shell interpolation.
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
+          trusted="origin/$DEFAULT_BRANCH"
           for candidate in Scripts/commit-policy.json scripts/commit-policy.json .github/commit-policy.json; do
-            if [ -f "$candidate" ]; then export COMMIT_POLICY_CONFIG="$PWD/$candidate"; break; fi
+            if git cat-file -e "$trusted:$candidate" 2>/dev/null; then
+              git show "$trusted:$candidate" > "$RUNNER_TEMP/caller-commit-policy.json"
+              export COMMIT_POLICY_CONFIG="$RUNNER_TEMP/caller-commit-policy.json"
+              echo "Using legacyBase from $trusted:$candidate"
+              break
+            fi
           done
           node .gemsforge-shared/scripts/commit-policy.mjs github

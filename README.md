@@ -38,7 +38,7 @@ Callers are identical everywhere. Differences live in repository variables and s
 | `PROJECTS_TOKEN` | secret | sync-issue-metadata | classic PAT, `project` + `repo` |
 | `ALLOWED_BASE_BRANCHES` | variable | branch policy | blank: default branch only |
 | `REQUIRE_CLOSING_KEYWORD` | variable | branch policy | `false`: a plain `#N` is enough |
-| `Scripts/commit-policy.json` → `legacyBase` | file | commit policy | none: every commit is checked |
+| `Scripts/commit-policy.json` → `legacyBase` (read from the default branch) | file | commit policy | none: every commit is checked |
 
 ```sh
 gh variable set ALLOWED_BASE_BRANCHES --body "master,master-toolkit" --repo GemsForge/GemsForgeAPI
@@ -85,7 +85,7 @@ Update a repository's protection rules when migrating it, because the old names 
 
 ## Security
 
-- This repository is public so public repositories can call it. It holds no secrets; callers pass theirs with `secrets: inherit`.
+- This repository is public so public repositories can call it. It holds no secrets; callers pass only `PROJECTS_TOKEN` explicitly (not `secrets: inherit`), so the shared code never sees their other secrets.
 - Policy workflows run on `pull_request_target` but never check out or run pull-request code.
 - A called workflow can only narrow the permissions its caller grants.
 
