@@ -46,8 +46,11 @@ jobs:
               return;
             }
             const { data: issue } = await github.rest.issues.get({ ...context.repo, issue_number: Number(match[3]) });
-            if (title !== issue.title) {
-              core.setFailed("PR title must match issue #" + match[3] + " title: \"" + issue.title + "\".");
+            // Issue titles may carry the number ("type(scope): #N text") or not
+            // ("type(scope): text"); the PR title always does.
+            const numbered = issue.title.replace(/^([^:]+):\s+(?!#\d)/, `$1: #${match[3]} `);
+            if (title !== issue.title && title !== numbered) {
+              core.setFailed("PR title must match issue #" + match[3] + " title: \"" + numbered + "\".");
               return;
             }
             const required = {
