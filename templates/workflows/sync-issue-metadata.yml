@@ -1,0 +1,53 @@
+# Managed by GemsForge/.github — do not edit here. Change the shared workflows
+# instead: https://github.com/GemsForge/.github
+# Per-repository settings: repository variable PROJECT_NUMBER and secret
+# PROJECTS_TOKEN (both optional; without them the Project board is skipped).
+name: Sync issue and pull request metadata
+
+on:
+  create:
+  issues:
+    types: [opened, reopened, closed]
+  pull_request:
+    types: [opened, reopened, edited, synchronize, ready_for_review, closed]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number to synchronize
+        required: false
+        type: string
+      issue_number:
+        description: Working issue number (required when no PR is supplied)
+        required: false
+        type: string
+      parent_issue:
+        description: Parent issue number (blank preserves current parent)
+        required: false
+        type: string
+      blocked_by:
+        description: Issues blocking this issue (comma-separated numbers)
+        required: false
+        type: string
+      blocking:
+        description: Issues this issue blocks (comma-separated numbers)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  sync:
+    uses: GemsForge/.github/.github/workflows/sync-issue-metadata.yml@v1
+    with:
+      pr_number: ${{ inputs.pr_number || '' }}
+      issue_number: ${{ inputs.issue_number || '' }}
+      parent_issue: ${{ inputs.parent_issue || '' }}
+      blocked_by: ${{ inputs.blocked_by || '' }}
+      blocking: ${{ inputs.blocking || '' }}
+      project-number: ${{ vars.PROJECT_NUMBER || '' }}
+    secrets: inherit

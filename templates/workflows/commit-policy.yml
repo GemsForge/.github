@@ -1,0 +1,16 @@
+# Managed by GemsForge/.github — do not edit here. Change the shared workflows
+# instead: https://github.com/GemsForge/.github
+name: Commit policy
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    types: [opened, reopened, synchronize, edited, ready_for_review]
+
+permissions:
+  contents: read
+
+jobs:
+  commits:
+    uses: GemsForge/.github/.github/workflows/commit-policy.yml@v1

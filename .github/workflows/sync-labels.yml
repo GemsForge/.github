@@ -1,0 +1,52 @@
+name: Sync repository labels
+
+# Reusable. Creates or updates the shared label catalog (labels.json in this
+# repository) in the calling repository. Existing extra labels are left alone.
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  sync-labels:
+    name: Create or update repository labels
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out shared label catalog
+        uses: actions/checkout@v7
+        with:
+          repository: GemsForge/.github
+          ref: ${{ github.job_workflow_sha }}
+          path: .gemsforge-shared
+          persist-credentials: false
+          sparse-checkout: labels.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require("node:fs");
+            const catalog = JSON.parse(fs.readFileSync(".gemsforge-shared/labels.json", "utf8"));
+            const labels = await github.paginate(github.rest.issues.listLabelsForRepo, {
+              ...context.repo, per_page: 100,
+            });
+            const existing = new Map(labels.map((label) => [label.name, label]));
+            for (const label of catalog.labels) {
+              const current = existing.get(label.name);
+              if (current) {
+                if (current.color !== label.color || current.description !== label.description) {
+                  await github.rest.issues.updateLabel({
+                    ...context.repo, name: label.name,
+                    color: label.color, description: label.description,
+                  });
+                }
+              } else {
+                await github.rest.issues.createLabel({
+                  ...context.repo, name: label.name,
+                  color: label.color, description: label.description,
+                });
+              }
+              core.notice(`Synchronized label: ${label.name}`);
+            }

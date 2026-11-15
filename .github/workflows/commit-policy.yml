@@ -1,0 +1,49 @@
+name: Commit policy
+
+# Reusable. Call from push and pull_request events.
+# Policy: type(scope): #issue short imperative description.
+# The validator lives in this repository (scripts/commit-policy.mjs) and is
+# checked out at the same commit as this workflow, so callers stay in sync.
+# A caller may keep its own grandfathering baseline in one of:
+#   Scripts/commit-policy.json, scripts/commit-policy.json, .github/commit-policy.json
+# Only its "legacyBase" is used. Merge commits are exempt; PR titles are checked
+# because they supply the proposed squash-merge subject.
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  commit-policy:
+    name: Commit policy
+    # A newly-created branch push does not identify a PR base; the
+    # pull_request event validates that branch against its real base instead.
+    if: ${{ github.event_name != 'push' || !github.event.created }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Check out shared policy scripts
+        uses: actions/checkout@v7
+        with:
+          repository: GemsForge/.github
+          ref: ${{ github.job_workflow_sha }}
+          path: .gemsforge-shared
+          persist-credentials: false
+          sparse-checkout: scripts
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Validate commits and proposed squash subject
+        # Messages and titles come from Git and the event JSON, never shell interpolation.
+        run: |
+          for candidate in Scripts/commit-policy.json scripts/commit-policy.json .github/commit-policy.json; do
+            if [ -f "$candidate" ]; then export COMMIT_POLICY_CONFIG="$PWD/$candidate"; break; fi
+          done
+          node .gemsforge-shared/scripts/commit-policy.mjs github

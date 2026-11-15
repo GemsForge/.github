@@ -1,0 +1,104 @@
+{
+  "labels": [
+    {
+      "name": "feature",
+      "color": "1F6FEB",
+      "description": "A user-facing or developer-facing capability"
+    },
+    {
+      "name": "fix",
+      "color": "D1242F",
+      "description": "A defect correction"
+    },
+    {
+      "name": "refactor",
+      "color": "8250DF",
+      "description": "A behavior-preserving restructuring"
+    },
+    {
+      "name": "testing",
+      "color": "BF8700",
+      "description": "Tests and verification"
+    },
+    {
+      "name": "documentation",
+      "color": "0969DA",
+      "description": "Documentation and learning content"
+    },
+    {
+      "name": "chore",
+      "color": "6E7781",
+      "description": "Maintenance work"
+    },
+    {
+      "name": "api",
+      "color": "DDF4FF",
+      "description": ".NET API work"
+    },
+    {
+      "name": "web",
+      "color": "DDF4FF",
+      "description": "React and TypeScript web work"
+    },
+    {
+      "name": "learning",
+      "color": "EDE7FF",
+      "description": "Lessons, quizzes, and practice sessions"
+    },
+    {
+      "name": "content",
+      "color": "EDE7FF",
+      "description": "Curated stack and learning content"
+    },
+    {
+      "name": "database",
+      "color": "EDE7FF",
+      "description": "Dapper, SQLite, and database work"
+    },
+    {
+      "name": "mobile",
+      "color": "DDF4FF",
+      "description": "React Native and mobile work"
+    },
+    {
+      "name": "accessibility",
+      "color": "DDF4FF",
+      "description": "Accessibility behavior and validation"
+    },
+    {
+      "name": "security",
+      "color": "DDF4FF",
+      "description": "Security-related work"
+    },
+    {
+      "name": "ci",
+      "color": "F1F8E9",
+      "description": "Continuous integration and repository automation"
+    },
+    {
+      "name": "deps",
+      "color": "F1F8E9",
+      "description": "Dependency maintenance"
+    },
+    {
+      "name": "build",
+      "color": "F1F8E9",
+      "description": "Build tooling and project setup"
+    },
+    {
+      "name": "infrastructure",
+      "color": "F1F8E9",
+      "description": "Infrastructure and deployment setup"
+    },
+    {
+      "name": "docs",
+      "color": "DDF4FF",
+      "description": "Documentation about the project"
+    },
+    {
+      "name": "readme",
+      "color": "DDF4FF",
+      "description": "README and repository onboarding"
+    }
+  ]
+}
