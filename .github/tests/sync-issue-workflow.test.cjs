@@ -76,11 +76,22 @@ function fixture() {
     } else if (query.includes("fields(first")) {
       data = { node: { fields: { nodes: [{id: "F", name: "Status", options}] } } };
     } else if (query.includes("items(first")) {
-      data = { node: { items: { nodes: projects } } };
+      // Pages of 100, like GitHub; the cursor is the next start index.
+      const start = Number(variables.cursor || 0);
+      const nodes = projects.slice(start, start + 100);
+      const next = start + nodes.length;
+      data = { node: { items: { nodes, pageInfo: {
+        hasNextPage: next < projects.length, endCursor: String(next),
+      } } } };
     } else if (query.includes("addProjectV2ItemById")) {
       const content = variables.contentId.startsWith("PR")
         ? { __typename: "PullRequest", number: 169 }
         : { __typename: "Issue", number: Number(variables.contentId.slice(1)) };
+      if (projects.some((candidate) => candidate.content?.__typename === content.__typename &&
+        candidate.content.number === content.number)) {
+        return { ok: true, text: async () => JSON.stringify({
+          errors: [{ message: "Content already exists in this project" }] }) };
+      }
       const item = { id: "ITEM" + variables.contentId, content: {
         ...content, repository: { nameWithOwner: "GemsForge/dev-wiki-api" },
       }, fieldValues: { nodes: [] } };
@@ -255,4 +266,17 @@ test("skips optional Project synchronization when PROJECT_NUMBER is not configur
   await f.run({ PROJECT_NUMBER: "", PROJECTS_TOKEN: "" }, { issue: { number: 170 } });
   assert.equal(f.projects.length, 0);
   assert.equal(f.statusWrites(), 0);
+});
+test("finds an existing item past the first page of a large board", async () => {
+  const f = fixture();
+  for (let number = 1; number <= 149; number++) {
+    f.projects.push({ id: "OTHER" + number, content: { __typename: "Issue", number: 1000 + number,
+      repository: { nameWithOwner: "GemsForge/dev-wiki-api" } }, fieldValues: { nodes: [] } });
+  }
+  f.projects.push({ id: "ITEMI170", content: { __typename: "Issue", number: 170,
+    repository: { nameWithOwner: "GemsForge/dev-wiki-api" } }, fieldValues: { nodes: [] } });
+  await f.run({ ISSUE_NUMBER: "170" });
+  assert.equal(f.projects.length, 150, "must not add the item again");
+  assert.equal(f.failures(), 0);
+  assert.ok(f.statuses.some((write) => write.itemId === "ITEMI170"));
 });

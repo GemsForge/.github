@@ -415,10 +415,11 @@ jobs:
               return;
             }
 
-            const itemQuery = `query($projectId: ID!) {
+            const itemQuery = `query($projectId: ID!, $cursor: String) {
               node(id: $projectId) {
                 ... on ProjectV2 {
-                  items(first: 100) {
+                  items(first: 100, after: $cursor) {
+                    pageInfo { hasNextPage endCursor }
                     nodes {
                       id
                       content {
@@ -444,14 +445,24 @@ jobs:
               }
             }`;
 
-            let projectItems = (
-              await projectApi(itemQuery, { projectId: project.id })
-            ).node?.items?.nodes ?? [];
+            // Boards can hold far more than one page of items, so read every page;
+            // otherwise content past the first page looks missing and is re-added.
+            const loadProjectItems = async () => {
+              const all = [];
+              let cursor = null;
+              do {
+                const page = (await projectApi(itemQuery, { projectId: project.id, cursor }))
+                  .node?.items;
+                all.push(...(page?.nodes ?? []));
+                cursor = page?.pageInfo?.hasNextPage ? page.pageInfo.endCursor : null;
+              } while (cursor);
+              return all;
+            };
+            let projectItems = await loadProjectItems();
             // Project webhook retries can race while adding the same content.
             // Re-read after GitHub reports a duplicate so synchronization stays idempotent.
             const refreshProjectItems = async () => {
-              projectItems = (await projectApi(itemQuery, { projectId: project.id }))
-                .node?.items?.nodes ?? [];
+              projectItems = await loadProjectItems();
               return projectItems;
             };
             let issueItem = projectItems.find(
